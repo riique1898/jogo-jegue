@@ -10,52 +10,138 @@ Aplicativo mobile multiplayer do jogo de cartas **Burro**, desenvolvido para fun
 **Instituição:** Senac  
 **Turma:** 3ª A EMI Informática para Internet
 
-Aplicativo mobile em Vue 3, Ionic e Capacitor. O jogo funciona offline e permite criar ou entrar em partidas com 2 a 6 jogadores.
+---
 
-## Executar no navegador
+## 📚 UCs e Indicadores envolvidos
 
-```bash
-npm install
-npm run dev
-```
+### UCs
 
-Para testar a partida simulada:
+- Desenvolvimento de aplicações para dispositivos móveis
+- Codificar aplicações para dispositivos móveis
+- Publicar aplicações para dispositivos móveis
+- Segurança e Cyberlinguagem
 
-1. Informe seu nome e crie uma sala.
-2. Clique em **Simular jogador próximo**.
-3. Aceite a Ana.
-4. Comece a partida.
-5. Envie uma carta. A Ana pensa por alguns instantes, devolve uma carta automaticamente e sua vez retorna.
-6. Depois de três trocas, a partida termina e é salva no histórico.
+### Indicadores
 
-O modo simulado existe apenas no navegador. Ele não chama APIs Bluetooth nativas.
+- Desenvolvimento de aplicações mobile utilizando tecnologias atuais.
+- Implementação de comunicação entre dispositivos.
+- Desenvolvimento de interfaces responsivas para dispositivos móveis.
+- Utilização de armazenamento local.
+- Implementação e testes de funcionalidades.
+- Organização e versionamento de código utilizando Git e GitHub.
 
-## Android Studio
+---
 
-O projeto Android está em `android/`.
+## 👥 Integrantes
 
-```bash
-npm run build
-npx cap sync android
-npx cap open android
-```
+| Integrante | GitHub |
+|---|---|
+| Henrique Schenkel Araújo | [@riiquel898](https://github.com/riiquel898) |
 
-Para gerar o APK debug:
+---
 
-```bash
-cd android
-gradlew.bat assembleDebug
-```
+# 🎮 Sobre o projeto
 
-APK gerado em `android/app/build/outputs/apk/debug/app-debug.apk`.
+O **Jogo do Burro** é um jogo de cartas multiplayer desenvolvido para dispositivos móveis.
 
-Teste o Bluetooth em dois celulares físicos, com Bluetooth ligado. O emulador não é adequado para validar BLE.
+O projeto tem como objetivo permitir que dois ou mais jogadores participem da mesma partida utilizando **Bluetooth**, sem depender de uma conexão com a internet.
 
-## Bluetooth real
+A aplicação utiliza:
 
-O app usa `@capgo/capacitor-bluetooth-low-energy`, pois a partida precisa que um celular atue como periférico/anfitrião e os demais como centrais. O anfitrião anuncia o serviço GATT `7b8b4f70-6d2d-4c43-9c4f-0a6e4f6f1000`; os jogadores escaneiam, conectam e enviam solicitações de entrada.
+- Vue 3
+- Ionic Framework
+- Capacitor
+- TypeScript
+- Bluetooth
+- Armazenamento local
 
-As mensagens usam JSON versionado e são validadas antes de alterar o estado:
+A comunicação entre os dispositivos permite sincronizar as ações realizadas durante a partida.
+
+---
+
+# 🃏 Como o jogo funciona
+
+O jogo precisa de no mínimo **2 jogadores**, sendo recomendado suporte para até **6 jogadores**.
+
+Um dos jogadores atua como **anfitrião da partida**.
+
+Cada jogador recebe **4 cartas**.
+
+O objetivo é conseguir formar um grupo de **4 cartas do mesmo valor**.
+
+Durante cada rodada:
+
+1. O jogador escolhe uma carta da sua mão.
+2. A carta é enviada para o próximo jogador.
+3. O jogador recebe uma carta do jogador anterior.
+4. O sistema atualiza as mãos dos jogadores.
+5. O turno passa de acordo com a ordem definida na partida.
+
+Quando um jogador consegue formar quatro cartas iguais, ele indica que completou seu objetivo.
+
+A partida identifica o vencedor e o jogador penalizado conforme as regras implementadas.
+
+A penalização pode ser representada pelas letras da palavra:
+
+> **B U R R O**
+
+A partida termina quando a condição de encerramento definida pelo jogo é atingida.
+
+---
+
+# 📱 Como jogar
+
+## 1. Identificação
+
+Ao abrir o aplicativo, o jogador informa seu nome.
+
+O sistema atribui um identificador único ao jogador dentro da partida.
+
+## 2. Criar uma partida
+
+Um jogador pode criar uma nova partida.
+
+Esse jogador será definido como o **anfitrião**.
+
+## 3. Entrar em uma partida
+
+Os outros jogadores procuram partidas disponíveis através do Bluetooth.
+
+O jogador solicita a entrada e o anfitrião pode aceitar ou recusar.
+
+## 4. Sala de espera
+
+Antes de iniciar a partida, os jogadores conectados aparecem na sala de espera.
+
+A partida pode ser iniciada quando houver pelo menos **2 jogadores**.
+
+## 5. Início da partida
+
+O sistema embaralha e distribui as cartas automaticamente.
+
+Cada jogador consegue visualizar somente suas próprias cartas.
+
+## 6. Troca de cartas
+
+Durante seu turno, o jogador seleciona uma carta e confirma a jogada.
+
+A carta é enviada para o próximo jogador e uma nova carta é recebida do jogador anterior.
+
+## 7. Vitória
+
+Quando um jogador formar quatro cartas do mesmo valor, o sistema identifica a conclusão do objetivo.
+
+Ao finalizar a partida, o aplicativo apresenta o resultado.
+
+---
+
+# 📡 Comunicação Bluetooth
+
+A comunicação entre os dispositivos é realizada através de Bluetooth.
+
+O projeto utiliza mensagens estruturadas para representar os eventos da partida.
+
+### Tipos de mensagens
 
 ```text
 SOLICITACAO_ENTRADA
@@ -67,33 +153,3 @@ JOGADOR_COMPLETOU
 PARTIDA_FINALIZADA
 JOGADOR_DESCONECTADO
 RECONEXAO
-```
-
-No Android 12+, o manifesto solicita `BLUETOOTH_SCAN`, `BLUETOOTH_CONNECT` e `BLUETOOTH_ADVERTISE`. Em versões antigas, também são declaradas as permissões Bluetooth legadas e localização.
-
-## Regras adotadas
-
-- Cada jogador recebe quatro cartas.
-- O objetivo é formar quatro cartas do mesmo valor.
-- A carta escolhida é enviada ao próximo jogador na ordem da sala.
-- O anfitrião valida a entrada e inicia a partida com pelo menos dois jogadores.
-- A mão de cada jogador é enviada apenas para sua conexão BLE.
-- A partida é encerrada quando um jogador completa o objetivo; a demonstração web usa três trocas para facilitar a apresentação.
-- O resultado registra vencedor, penalizado, participantes, ordem, rodadas, datas e motivo.
-
-## Persistência e testes
-
-O histórico é salvo localmente e permanece depois de fechar e abrir o app. A interface permite abrir detalhes, excluir uma partida e limpar tudo com confirmação. O plugin `@capacitor-community/sqlite` está instalado para a persistência SQLite nativa; a implementação atual usa `localStorage`, que atende ao funcionamento web/offline.
-
-```bash
-npm test
-npm run build
-```
-
-## Estrutura
-
-- `src/App.vue`: telas e fluxo da partida.
-- `src/game/game.ts`: tipos e regras do jogo.
-- `src/game/game.test.ts`: testes automatizados.
-- `src/bluetooth/ble.ts`: permissões, advertising, scan, GATT e mensagens.
-- `android/`: projeto nativo para Android Studio.
