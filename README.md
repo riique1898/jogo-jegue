@@ -1,62 +1,99 @@
-# Jegue — jogo de cartas offline
+# 🃏 Jogo do Burro — Multiplayer via Bluetooth
 
-Protótipo mobile-first em Vue 3 + TypeScript para o jogo Burro/Jegue. A interface cobre identificação, criação de sala, sala de espera, partida, resultado e histórico local.
+Aplicativo mobile multiplayer do jogo de cartas **Burro**, desenvolvido para funcionar entre dispositivos móveis utilizando **Bluetooth**, sem necessidade de conexão com a internet durante a partida.
 
-## Executar
+---
+
+## 🎓 Curso
+
+**Curso:** Informática para Internet — Ensino Médio Integrado  
+**Instituição:** Senac  
+**Turma:** 3ª A EMI Informática para Internet
+
+Aplicativo mobile em Vue 3, Ionic e Capacitor. O jogo funciona offline e permite criar ou entrar em partidas com 2 a 6 jogadores.
+
+## Executar no navegador
 
 ```bash
 npm install
 npm run dev
 ```
 
-Para validar a produção:
+Para testar a partida simulada:
+
+1. Informe seu nome e crie uma sala.
+2. Clique em **Simular jogador próximo**.
+3. Aceite a Ana.
+4. Comece a partida.
+5. Envie uma carta. A Ana pensa por alguns instantes, devolve uma carta automaticamente e sua vez retorna.
+6. Depois de três trocas, a partida termina e é salva no histórico.
+
+O modo simulado existe apenas no navegador. Ele não chama APIs Bluetooth nativas.
+
+## Android Studio
+
+O projeto Android está em `android/`.
 
 ```bash
-npm run build
-```
-
-## Mecânica adotada
-
-Cada jogador recebe quatro cartas e tenta formar quatro cartas de mesmo valor. Em cada rodada, seleciona uma carta e a envia ao jogador seguinte. A partida demonstrativa termina após três trocas para permitir testar rapidamente o resultado e o histórico. A ordem dos jogadores é mantida pela lista da sala, e apenas o anfitrião inicia a partida.
-
-## Persistência e comunicação
-
-O histórico é salvo automaticamente no `localStorage`, incluindo participantes, datas, rodadas, vencedor, penalizado e motivo do encerramento. A versão web usa uma simulação de Bluetooth: “Simular jogador próximo” cria uma solicitação para o anfitrião aceitar. Isso permite demonstrar o fluxo sem hardware.
-
-Para a entrega Android, a camada de transporte deve ser ligada ao plugin [capacitor-community/bluetooth-le](https://github.com/capacitor-community/bluetooth-le). As mensagens previstas são `SOLICITACAO_ENTRADA`, `JOGADOR_ENTROU`, `PARTIDA_INICIADA`, `JOGADA`, `TROCA_REALIZADA`, `JOGADOR_COMPLETOU`, `PARTIDA_FINALIZADA`, `JOGADOR_DESCONECTADO` e `RECONEXAO`. A lógica de domínio está isolada em `src/game/game.ts` para receber esse transporte sem misturar regras e interface.
-
-## Android Studio e Bluetooth real
-
-O projeto agora contém a plataforma `android/` e pode ser aberto diretamente:
-
-```bash
-npm install
 npm run build
 npx cap sync android
 npx cap open android
 ```
 
-Também é possível gerar o APK debug com `android/gradlew.bat assembleDebug`. O APK é gerado em `android/app/build/outputs/apk/debug/app-debug.apk`.
+Para gerar o APK debug:
 
-O app usa BLE real pelo pacote `@capgo/capacitor-bluetooth-low-energy`, que suporta os papéis central e periférico. O anfitrião cria um GATT service e anuncia a sala; os demais aparelhos escaneiam, conectam e enviam solicitações de entrada. As mensagens são JSON versionadas em uma característica com validação antes de alterar o estado.
+```bash
+cd android
+gradlew.bat assembleDebug
+```
 
-No Android 12+, são solicitadas `BLUETOOTH_SCAN`, `BLUETOOTH_CONNECT` e `BLUETOOTH_ADVERTISE`; em versões antigas, `BLUETOOTH`, `BLUETOOTH_ADMIN` e localização. O Bluetooth desligado, permissão negada e desconexão são tratados pela interface. Teste em dois aparelhos físicos com Bluetooth ligado; o emulador não é adequado para validar rádio Bluetooth.
+APK gerado em `android/app/build/outputs/apk/debug/app-debug.apk`.
 
-O pacote `@capacitor-community/sqlite` já está instalado para a evolução da persistência nativa. O histórico atual usa `localStorage`, que atende à persistência local e também funciona no navegador; a migração para SQLite pode ser feita sem mudar o modelo de `GameRecord`.
+Teste o Bluetooth em dois celulares físicos, com Bluetooth ligado. O emulador não é adequado para validar BLE.
 
-## Testes
+## Bluetooth real
+
+O app usa `@capgo/capacitor-bluetooth-low-energy`, pois a partida precisa que um celular atue como periférico/anfitrião e os demais como centrais. O anfitrião anuncia o serviço GATT `7b8b4f70-6d2d-4c43-9c4f-0a6e4f6f1000`; os jogadores escaneiam, conectam e enviam solicitações de entrada.
+
+As mensagens usam JSON versionado e são validadas antes de alterar o estado:
+
+```text
+SOLICITACAO_ENTRADA
+JOGADOR_ENTROU
+PARTIDA_INICIADA
+JOGADA
+TROCA_REALIZADA
+JOGADOR_COMPLETOU
+PARTIDA_FINALIZADA
+JOGADOR_DESCONECTADO
+RECONEXAO
+```
+
+No Android 12+, o manifesto solicita `BLUETOOTH_SCAN`, `BLUETOOTH_CONNECT` e `BLUETOOTH_ADVERTISE`. Em versões antigas, também são declaradas as permissões Bluetooth legadas e localização.
+
+## Regras adotadas
+
+- Cada jogador recebe quatro cartas.
+- O objetivo é formar quatro cartas do mesmo valor.
+- A carta escolhida é enviada ao próximo jogador na ordem da sala.
+- O anfitrião valida a entrada e inicia a partida com pelo menos dois jogadores.
+- A mão de cada jogador é enviada apenas para sua conexão BLE.
+- A partida é encerrada quando um jogador completa o objetivo; a demonstração web usa três trocas para facilitar a apresentação.
+- O resultado registra vencedor, penalizado, participantes, ordem, rodadas, datas e motivo.
+
+## Persistência e testes
+
+O histórico é salvo localmente e permanece depois de fechar e abrir o app. A interface permite abrir detalhes, excluir uma partida e limpar tudo com confirmação. O plugin `@capacitor-community/sqlite` está instalado para a persistência SQLite nativa; a implementação atual usa `localStorage`, que atende ao funcionamento web/offline.
 
 ```bash
 npm test
+npm run build
 ```
-
-Os testes cobrem turno inicial, distribuição de quatro cartas e detecção de grupo de quatro valores iguais.
 
 ## Estrutura
 
-- `src/App.vue`: telas e fluxo da demonstração.
-- `src/game/game.ts`: tipos e regras independentes da UI.
-- `src/style.css`: identidade visual responsiva para celular.
-- `src/bluetooth/ble.ts`: permissões, advertising, scan, conexão GATT e mensagens BLE.
-- `src/game/game.test.ts`: testes automatizados da lógica.
-- `android/`: projeto nativo importável no Android Studio.
+- `src/App.vue`: telas e fluxo da partida.
+- `src/game/game.ts`: tipos e regras do jogo.
+- `src/game/game.test.ts`: testes automatizados.
+- `src/bluetooth/ble.ts`: permissões, advertising, scan, GATT e mensagens.
+- `android/`: projeto nativo para Android Studio.
