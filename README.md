@@ -36,7 +36,7 @@ Aplicativo mobile multiplayer do jogo de cartas **Burro**, desenvolvido para fun
 
 | Integrante | GitHub |
 |---|---|
-| Henrique Schenkel Araújo | [@riiquel898](https://github.com/riiquel898) |
+| Henrique Schenkel Araújo | [@riique1898](https://github.com/riiquel898) |
 
 ---
 
